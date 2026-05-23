@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
-import type { Patient, PreventiveCare } from '../types/clinicRecords'
+import { isGenericTutor, type Patient, type PreventiveCare, type Tutor } from '../types/clinicRecords'
 
 type PreventiveCareFormProps = {
   patients: Patient[]
+  tutors: Tutor[]
   onSubmit: (preventiveCare: Omit<PreventiveCare, 'id'>) => Promise<PreventiveCare | void>
 }
 
@@ -19,7 +20,7 @@ const initialForm: Omit<PreventiveCare, 'id'> = {
 type PreventiveCareField = keyof typeof initialForm
 type PreventiveCareErrors = Partial<Record<PreventiveCareField, string>>
 
-export function PreventiveCareForm({ patients, onSubmit }: PreventiveCareFormProps) {
+export function PreventiveCareForm({ patients, tutors, onSubmit }: PreventiveCareFormProps) {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<PreventiveCareErrors>({})
   const [isSaving, setIsSaving] = useState(false)
@@ -84,7 +85,11 @@ export function PreventiveCareForm({ patients, onSubmit }: PreventiveCareFormPro
         <span className="field-label">Nombre paciente <span className="required-mark">*</span></span>
         <select required disabled={!hasPatients} value={form.patientId} onChange={(event) => updateField('patientId', event.target.value)}>
           <option value="">{hasPatients ? 'Seleccionar paciente' : 'Registra un paciente primero'}</option>
-          {patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.name}</option>)}
+          {patients.map((patient) => (
+            <option key={patient.id} value={patient.id}>
+              {formatPatientOption(patient, tutors)}
+            </option>
+          ))}
         </select>
         {errors.patientId && <small className="field-error-text">{errors.patientId}</small>}
       </label>
@@ -120,4 +125,11 @@ export function PreventiveCareForm({ patients, onSubmit }: PreventiveCareFormPro
       </button>
     </form>
   )
+}
+
+function formatPatientOption(patient: Patient, tutors: Tutor[]) {
+  const tutor = tutors.find((currentTutor) => String(currentTutor.id) === String(patient.tutorId))
+  const tutorName = isGenericTutor(tutor) ? 'Sin tutor registrado' : tutor?.fullName ?? 'Sin tutor asociado'
+
+  return `${patient.name} - Tutor: ${tutorName}`
 }

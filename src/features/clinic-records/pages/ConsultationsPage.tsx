@@ -109,7 +109,7 @@ export function ConsultationsPage() {
             eyebrow="ATENCIÓN"
             title="Registrar consulta"
           />
-          <ConsultationForm patients={records.patients} onSubmit={actions.addConsultation} />
+          <ConsultationForm patients={records.patients} tutors={records.tutors} onSubmit={actions.addConsultation} />
         </article>
 
         <article className="module-card">
@@ -119,6 +119,7 @@ export function ConsultationsPage() {
           />
           <PreventiveCareForm
             patients={records.patients}
+            tutors={records.tutors}
             onSubmit={actions.addPreventiveCare}
           />
         </article>

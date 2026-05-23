@@ -1,9 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
-import type { Consultation, Patient, PaymentStatus } from '../types/clinicRecords'
+import { isGenericTutor, type Consultation, type Patient, type PaymentStatus, type Tutor } from '../types/clinicRecords'
 
 type ConsultationFormProps = {
   patients: Patient[]
+  tutors: Tutor[]
   onSubmit: (consultation: Omit<Consultation, 'id'>) => Promise<Consultation | void>
 }
 
@@ -31,7 +32,7 @@ const initialForm = {
 type ConsultationField = keyof typeof initialForm
 type ConsultationErrors = Partial<Record<ConsultationField, string>>
 
-export function ConsultationForm({ patients, onSubmit }: ConsultationFormProps) {
+export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFormProps) {
   const [form, setForm] = useState(initialForm)
   const [errors, setErrors] = useState<ConsultationErrors>({})
   const [isSaving, setIsSaving] = useState(false)
@@ -121,7 +122,11 @@ export function ConsultationForm({ patients, onSubmit }: ConsultationFormProps) 
         <span className="field-label">Nombre paciente <span className="required-mark">*</span></span>
         <select required disabled={!hasPatients} value={form.patientId} onChange={(event) => updateField('patientId', event.target.value)}>
           <option value="">{hasPatients ? 'Seleccionar paciente' : 'Registra un paciente primero'}</option>
-          {patients.map((patient) => <option key={patient.id} value={patient.id}>{patient.name}</option>)}
+          {patients.map((patient) => (
+            <option key={patient.id} value={patient.id}>
+              {formatPatientOption(patient, tutors)}
+            </option>
+          ))}
         </select>
         {errors.patientId && <small className="field-error-text">{errors.patientId}</small>}
       </label>
@@ -177,4 +182,11 @@ export function ConsultationForm({ patients, onSubmit }: ConsultationFormProps) 
       </button>
     </form>
   )
+}
+
+function formatPatientOption(patient: Patient, tutors: Tutor[]) {
+  const tutor = tutors.find((currentTutor) => String(currentTutor.id) === String(patient.tutorId))
+  const tutorName = isGenericTutor(tutor) ? 'Sin tutor registrado' : tutor?.fullName ?? 'Sin tutor asociado'
+
+  return `${patient.name} - Tutor: ${tutorName}`
 }
