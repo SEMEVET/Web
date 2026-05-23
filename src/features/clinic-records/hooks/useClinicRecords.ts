@@ -37,6 +37,12 @@ function createId() {
   return crypto.randomUUID()
 }
 
+function sortPatientsByName(patients: Patient[]) {
+  return [...patients].sort((firstPatient, secondPatient) =>
+    firstPatient.name.localeCompare(secondPatient.name, 'es', { sensitivity: 'base' }),
+  )
+}
+
 export function useClinicRecords() {
   const [records, setRecords] = useState<ClinicRecords>(initialRecords)
   const [isLoading, setIsLoading] = useState(isSupabaseConfigured)
@@ -52,7 +58,12 @@ export function useClinicRecords() {
         setError(null)
         const remoteRecords = await fetchClinicRecords()
 
-        if (isActive) setRecords(remoteRecords)
+        if (isActive) {
+          setRecords({
+            ...remoteRecords,
+            patients: sortPatientsByName(remoteRecords.patients),
+          })
+        }
       } catch (loadError) {
         if (isActive) {
           setError(loadError instanceof Error ? loadError.message : 'No se pudieron cargar los datos.')
@@ -141,7 +152,7 @@ export function useClinicRecords() {
 
         setRecords((current) => ({
           ...current,
-          patients: [savedPatient, ...current.patients],
+          patients: sortPatientsByName([savedPatient, ...current.patients]),
         }))
 
         return savedPatient
@@ -152,8 +163,10 @@ export function useClinicRecords() {
 
         setRecords((current) => ({
           ...current,
-          patients: current.patients.map((currentPatient) =>
-            currentPatient.id === id ? { ...currentPatient, ...(savedPatient ?? patient) } : currentPatient,
+          patients: sortPatientsByName(
+            current.patients.map((currentPatient) =>
+              currentPatient.id === id ? { ...currentPatient, ...(savedPatient ?? patient) } : currentPatient,
+            ),
           ),
         }))
 
