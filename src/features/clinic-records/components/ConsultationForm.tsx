@@ -14,23 +14,53 @@ const initialForm = {
   attentionType: '',
   reason: '',
   anamnesis: '',
+  relevantHistory: '',
   physicalExam: '',
   temperature: '',
   heartRate: '',
   respiratoryRate: '',
+  weight: '',
   mucousMembranes: '',
   tllc: '',
+  hydration: '',
+  bodyCondition: '',
+  pain: '',
+  clinicalFindings: '',
   presumptiveDiagnosis: '',
+  differentialDiagnoses: '',
   definitiveDiagnosis: '',
   treatment: '',
+  prescribedMedications: '',
+  suggestedTests: '',
   indications: '',
+  controlCriteria: '',
+  referralCriteria: '',
   nextControl: '',
+  internalObservations: '',
   value: '',
   paymentStatus: '',
 }
 
 type ConsultationField = keyof typeof initialForm
 type ConsultationErrors = Partial<Record<ConsultationField, string>>
+
+const soapTextFields: Array<{ field: ConsultationField; label: string }> = [
+  { field: 'reason', label: 'Motivo de consulta' },
+  { field: 'anamnesis', label: 'Anamnesis' },
+  { field: 'relevantHistory', label: 'Antecedentes relevantes' },
+  { field: 'physicalExam', label: 'Examen físico general' },
+  { field: 'clinicalFindings', label: 'Hallazgos clínicos' },
+  { field: 'presumptiveDiagnosis', label: 'Diagnóstico presuntivo' },
+  { field: 'differentialDiagnoses', label: 'Diagnósticos diferenciales' },
+  { field: 'definitiveDiagnosis', label: 'Diagnóstico definitivo' },
+  { field: 'treatment', label: 'Tratamiento aplicado' },
+  { field: 'prescribedMedications', label: 'Medicamentos indicados' },
+  { field: 'suggestedTests', label: 'Exámenes sugeridos' },
+  { field: 'indications', label: 'Indicaciones al tutor' },
+  { field: 'controlCriteria', label: 'Criterio de control' },
+  { field: 'referralCriteria', label: 'Criterio de derivación' },
+  { field: 'internalObservations', label: 'Observaciones internas' },
+]
 
 export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFormProps) {
   const [form, setForm] = useState(initialForm)
@@ -51,6 +81,7 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       ['temperature', 'La temperatura debe ser un número válido.'],
       ['heartRate', 'La frecuencia cardíaca debe ser numérica.'],
       ['respiratoryRate', 'La frecuencia respiratoria debe ser numérica.'],
+      ['weight', 'El peso debe ser numérico. Puedes usar coma o punto.'],
       ['value', 'El valor debe ser numérico.'],
     ]
 
@@ -63,8 +94,9 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
 
     numericFields.forEach(([field, text]) => {
       const value = form[field]
-      if (value.trim() && Number.isNaN(Number(value))) nextErrors[field] = text
-      if (value.trim() && Number(value) < 0) nextErrors[field] = 'El valor no puede ser negativo.'
+      const normalizedValue = normalizeDecimalValue(value)
+      if (value.trim() && Number.isNaN(Number(normalizedValue))) nextErrors[field] = text
+      if (value.trim() && Number(normalizedValue) < 0) nextErrors[field] = 'El valor no puede ser negativo.'
     })
 
     setErrors(nextErrors)
@@ -85,18 +117,30 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       attentionType: form.attentionType.trim(),
       reason: form.reason.trim(),
       anamnesis: form.anamnesis.trim(),
+      relevantHistory: form.relevantHistory.trim(),
       physicalExam: form.physicalExam.trim(),
-      temperature: form.temperature.trim(),
+      temperature: normalizeDecimalValue(form.temperature),
       heartRate: form.heartRate.trim(),
       respiratoryRate: form.respiratoryRate.trim(),
+      weight: normalizeDecimalValue(form.weight),
       mucousMembranes: form.mucousMembranes.trim(),
       tllc: form.tllc.trim(),
+      hydration: form.hydration.trim(),
+      bodyCondition: form.bodyCondition.trim(),
+      pain: form.pain.trim(),
+      clinicalFindings: form.clinicalFindings.trim(),
       presumptiveDiagnosis: form.presumptiveDiagnosis.trim(),
+      differentialDiagnoses: form.differentialDiagnoses.trim(),
       definitiveDiagnosis: form.definitiveDiagnosis.trim(),
       treatment: form.treatment.trim(),
+      prescribedMedications: form.prescribedMedications.trim(),
+      suggestedTests: form.suggestedTests.trim(),
       indications: form.indications.trim(),
+      controlCriteria: form.controlCriteria.trim(),
+      referralCriteria: form.referralCriteria.trim(),
       nextControl: form.nextControl,
-      value: form.value.trim(),
+      internalObservations: form.internalObservations.trim(),
+      value: normalizeDecimalValue(form.value),
       paymentStatus: form.paymentStatus.trim() as PaymentStatus | '',
     }
 
@@ -106,10 +150,13 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       setForm(initialForm)
       setErrors({})
       setMessage({ type: 'success', text: 'Consulta guardada correctamente en Supabase.' })
-    } catch {
+    } catch (saveError) {
+      const errorMessage = getErrorMessage(saveError)
       setMessage({
         type: 'error',
-        text: 'No se pudo guardar la consulta. Revisa permisos RLS o conexión de Supabase.',
+        text: errorMessage.includes('column')
+          ? 'No se pudo guardar la consulta. Ejecuta la migración SOAP de Supabase y vuelve a intentar.'
+          : 'No se pudo guardar la consulta. Revisa permisos RLS o conexión de Supabase.',
       })
     } finally {
       setIsSaving(false)
@@ -142,7 +189,7 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       </label>
       <label className={errors.value ? 'field-error' : undefined}>
         <span className="field-label">Valor <span className="required-mark">*</span></span>
-        <input required inputMode="numeric" value={form.value} onChange={(event) => updateField('value', event.target.value)} />
+        <input required inputMode="decimal" value={form.value} onChange={(event) => updateField('value', event.target.value)} />
         {errors.value && <small className="field-error-text">{errors.value}</small>}
       </label>
       <label className={errors.paymentStatus ? 'field-error' : undefined}>
@@ -156,32 +203,49 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
         </select>
         {errors.paymentStatus && <small className="field-error-text">{errors.paymentStatus}</small>}
       </label>
+
+      <label className={errors.temperature ? 'field-error' : undefined}>Temperatura<input inputMode="decimal" value={form.temperature} onChange={(event) => updateField('temperature', event.target.value)} />{errors.temperature && <small className="field-error-text">{errors.temperature}</small>}</label>
+      <label className={errors.heartRate ? 'field-error' : undefined}>Frecuencia cardíaca<input inputMode="numeric" value={form.heartRate} onChange={(event) => updateField('heartRate', event.target.value)} />{errors.heartRate && <small className="field-error-text">{errors.heartRate}</small>}</label>
+      <label className={errors.respiratoryRate ? 'field-error' : undefined}>Frecuencia respiratoria<input inputMode="numeric" value={form.respiratoryRate} onChange={(event) => updateField('respiratoryRate', event.target.value)} />{errors.respiratoryRate && <small className="field-error-text">{errors.respiratoryRate}</small>}</label>
+      <label className={errors.weight ? 'field-error' : undefined}>Peso<input inputMode="decimal" value={form.weight} onChange={(event) => updateField('weight', event.target.value)} />{errors.weight && <small className="field-error-text">{errors.weight}</small>}</label>
+      <label>Mucosas<input value={form.mucousMembranes} onChange={(event) => updateField('mucousMembranes', event.target.value)} /></label>
+      <label>TLLC<input value={form.tllc} onChange={(event) => updateField('tllc', event.target.value)} /></label>
+      <label>Hidratación<input value={form.hydration} onChange={(event) => updateField('hydration', event.target.value)} /></label>
+      <label>Condición corporal<input value={form.bodyCondition} onChange={(event) => updateField('bodyCondition', event.target.value)} /></label>
+      <label>Dolor<input value={form.pain} onChange={(event) => updateField('pain', event.target.value)} /></label>
       <label>
         Próximo control
         <input type="date" value={form.nextControl} onChange={(event) => updateField('nextControl', event.target.value)} />
       </label>
-      <label className={`wide-field ${errors.reason ? 'field-error' : ''}`}>
-        <span className="field-label">Motivo <span className="required-mark">*</span></span>
-        <textarea required value={form.reason} onChange={(event) => updateField('reason', event.target.value)} />
-        {errors.reason && <small className="field-error-text">{errors.reason}</small>}
-      </label>
-      <label className="wide-field">Anamnesis<textarea value={form.anamnesis} onChange={(event) => updateField('anamnesis', event.target.value)} /></label>
-      <label className="wide-field">Examen físico<textarea value={form.physicalExam} onChange={(event) => updateField('physicalExam', event.target.value)} /></label>
-      <label className={errors.temperature ? 'field-error' : undefined}>Temperatura<input inputMode="decimal" value={form.temperature} onChange={(event) => updateField('temperature', event.target.value)} />{errors.temperature && <small className="field-error-text">{errors.temperature}</small>}</label>
-      <label className={errors.heartRate ? 'field-error' : undefined}>Frecuencia cardíaca<input inputMode="numeric" value={form.heartRate} onChange={(event) => updateField('heartRate', event.target.value)} />{errors.heartRate && <small className="field-error-text">{errors.heartRate}</small>}</label>
-      <label className={errors.respiratoryRate ? 'field-error' : undefined}>Frecuencia respiratoria<input inputMode="numeric" value={form.respiratoryRate} onChange={(event) => updateField('respiratoryRate', event.target.value)} />{errors.respiratoryRate && <small className="field-error-text">{errors.respiratoryRate}</small>}</label>
-      <label>Mucosas<input value={form.mucousMembranes} onChange={(event) => updateField('mucousMembranes', event.target.value)} /></label>
-      <label>TLLC<input value={form.tllc} onChange={(event) => updateField('tllc', event.target.value)} /></label>
-      <label className="wide-field">Diagnóstico presuntivo<textarea value={form.presumptiveDiagnosis} onChange={(event) => updateField('presumptiveDiagnosis', event.target.value)} /></label>
-      <label className="wide-field">Diagnóstico definitivo<textarea value={form.definitiveDiagnosis} onChange={(event) => updateField('definitiveDiagnosis', event.target.value)} /></label>
-      <label className="wide-field">Tratamiento<textarea value={form.treatment} onChange={(event) => updateField('treatment', event.target.value)} /></label>
-      <label className="wide-field">Indicaciones<textarea value={form.indications} onChange={(event) => updateField('indications', event.target.value)} /></label>
+
+      {soapTextFields.map(({ field, label }) => (
+        <label className={`wide-field ${errors[field] ? 'field-error' : ''}`} key={field}>
+          <span className="field-label">{label}{field === 'reason' && <span className="required-mark"> *</span>}</span>
+          <textarea required={field === 'reason'} value={form[field]} onChange={(event) => updateField(field, event.target.value)} />
+          {errors[field] && <small className="field-error-text">{errors[field]}</small>}
+        </label>
+      ))}
+
       {message && <FormMessage type={message.type}>{message.text}</FormMessage>}
       <button type="submit" disabled={!hasPatients || isSaving}>
         {isSaving ? 'Guardando consulta...' : 'Registrar consulta'}
       </button>
     </form>
   )
+}
+
+function normalizeDecimalValue(value: string) {
+  return value.trim().replace(',', '.')
+}
+
+function getErrorMessage(error: unknown) {
+  if (error instanceof Error) return error.message
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    const message = (error as { message?: unknown }).message
+    return typeof message === 'string' ? message : ''
+  }
+
+  return ''
 }
 
 function formatPatientOption(patient: Patient, tutors: Tutor[]) {

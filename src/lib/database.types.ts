@@ -134,19 +134,32 @@ export type Database = {
           id: number
           paciente_id: number
           fecha: string
+          tipo_atencion: string | null
           motivo: string
           anamnesis: string | null
+          antecedentes_relevantes: string | null
           examen_fisico: string | null
           temperatura: number | null
           frecuencia_cardiaca: number | null
           frecuencia_respiratoria: number | null
+          peso: number | null
           mucosas: string | null
           tllc: string | null
+          hidratacion: string | null
+          condicion_corporal: string | null
+          dolor: string | null
+          hallazgos_clinicos: string | null
           diagnostico_presuntivo: string | null
+          diagnosticos_diferenciales: string | null
           diagnostico_definitivo: string | null
           tratamiento: string | null
+          medicamentos_indicados: string | null
+          examenes_sugeridos: string | null
           indicaciones: string | null
+          criterio_control: string | null
+          criterio_derivacion: string | null
           'proximo control': string | null
+          observaciones_internas: string | null
           valor: number | null
           estado_pago: string | null
           fecha_creacion: string | null
@@ -155,19 +168,32 @@ export type Database = {
           id?: number
           paciente_id: number
           fecha: string
+          tipo_atencion?: string | null
           motivo: string
           anamnesis?: string | null
+          antecedentes_relevantes?: string | null
           examen_fisico?: string | null
           temperatura?: number | null
           frecuencia_cardiaca?: number | null
           frecuencia_respiratoria?: number | null
+          peso?: number | null
           mucosas?: string | null
           tllc?: string | null
+          hidratacion?: string | null
+          condicion_corporal?: string | null
+          dolor?: string | null
+          hallazgos_clinicos?: string | null
           diagnostico_presuntivo?: string | null
+          diagnosticos_diferenciales?: string | null
           diagnostico_definitivo?: string | null
           tratamiento?: string | null
+          medicamentos_indicados?: string | null
+          examenes_sugeridos?: string | null
           indicaciones?: string | null
+          criterio_control?: string | null
+          criterio_derivacion?: string | null
           'proximo control'?: string | null
+          observaciones_internas?: string | null
           valor?: number | null
           estado_pago?: string | null
           fecha_creacion?: string | null
@@ -176,19 +202,32 @@ export type Database = {
           id?: number
           paciente_id?: number
           fecha?: string
+          tipo_atencion?: string | null
           motivo?: string
           anamnesis?: string | null
+          antecedentes_relevantes?: string | null
           examen_fisico?: string | null
           temperatura?: number | null
           frecuencia_cardiaca?: number | null
           frecuencia_respiratoria?: number | null
+          peso?: number | null
           mucosas?: string | null
           tllc?: string | null
+          hidratacion?: string | null
+          condicion_corporal?: string | null
+          dolor?: string | null
+          hallazgos_clinicos?: string | null
           diagnostico_presuntivo?: string | null
+          diagnosticos_diferenciales?: string | null
           diagnostico_definitivo?: string | null
           tratamiento?: string | null
+          medicamentos_indicados?: string | null
+          examenes_sugeridos?: string | null
           indicaciones?: string | null
+          criterio_control?: string | null
+          criterio_derivacion?: string | null
           'proximo control'?: string | null
+          observaciones_internas?: string | null
           valor?: number | null
           estado_pago?: string | null
           fecha_creacion?: string | null

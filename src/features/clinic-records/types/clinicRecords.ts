@@ -43,17 +43,29 @@ export type Consultation = {
   attentionType: string
   reason: string
   anamnesis: string
+  relevantHistory: string
   physicalExam: string
   temperature: string
   heartRate: string
   respiratoryRate: string
+  weight: string
   mucousMembranes: string
   tllc: string
+  hydration: string
+  bodyCondition: string
+  pain: string
+  clinicalFindings: string
   presumptiveDiagnosis: string
+  differentialDiagnoses: string
   definitiveDiagnosis: string
   treatment: string
+  prescribedMedications: string
+  suggestedTests: string
   indications: string
+  controlCriteria: string
+  referralCriteria: string
   nextControl: string
+  internalObservations: string
   value: string
   paymentStatus: PaymentStatus | ''
 }
