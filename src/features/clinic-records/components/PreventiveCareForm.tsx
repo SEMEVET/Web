@@ -32,7 +32,7 @@ const initialDewormingForm: PreventiveCareFields = {
 }
 
 const vaccineTypes = ['Antirrábica', 'Óctuple', 'Triple felina', 'Traqueobronquitis']
-const dewormingTypes: PreventiveCare['careType'][] = ['Desparasitación interna', 'Desparasitación externa']
+const dewormingTypes: PreventiveCare['careType'][] = ['Desparasitación interna', 'Desparasitación externa', 'Ambas']
 
 export function PreventiveCareForm({ patients, tutors, onSubmit }: PreventiveCareFormProps) {
   return (
