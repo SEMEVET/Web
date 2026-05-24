@@ -580,6 +580,39 @@ a {
   grid-column: 1 / -1;
 }
 
+.preventive-forms-stack {
+  display: grid;
+  gap: 22px;
+}
+
+.preventive-subform {
+  border-top: 1px solid var(--semevet-line);
+  padding-top: 18px;
+}
+
+.preventive-subform:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.subform-heading {
+  display: grid;
+  grid-column: 1 / -1;
+  gap: 4px;
+}
+
+.subform-heading span {
+  color: var(--semevet-teal);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.subform-heading h3 {
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
 .form-message {
   margin: 2px 0 0;
   border-radius: 8px;

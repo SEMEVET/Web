@@ -240,6 +240,7 @@ export type Database = {
           paciente_id: number
           tipo: string
           producto: string
+          numero_lote: string | null
           fecha_aplicacion: string | null
           proxima_fecha: string | null
           observaciones: string | null
@@ -250,6 +251,7 @@ export type Database = {
           paciente_id: number
           tipo: string
           producto: string
+          numero_lote?: string | null
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
           observaciones?: string | null
@@ -260,6 +262,7 @@ export type Database = {
           paciente_id?: number
           tipo?: string
           producto?: string
+          numero_lote?: string | null
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
           observaciones?: string | null

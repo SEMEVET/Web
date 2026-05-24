@@ -130,12 +130,13 @@ export function ExportDataPage() {
         ]),
       ]),
       createCsv('prevencion', [
-        ['id', 'paciente_id', 'tipo', 'producto', 'fecha_aplicacion', 'proxima_fecha', 'observaciones'],
+        ['id', 'paciente_id', 'tipo', 'producto', 'numero_lote', 'fecha_aplicacion', 'proxima_fecha', 'observaciones'],
         ...records.preventiveCare.map((care) => [
           String(care.id),
           String(care.patientId),
           care.careType,
           care.product,
+          care.batchNumber,
           care.applicationDate,
           care.nextDate,
           care.observations,

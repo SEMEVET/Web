@@ -73,8 +73,9 @@ export type Consultation = {
 export type PreventiveCare = {
   id: number | string
   patientId: number | string
-  careType: 'Vacuna' | 'Desparasitación'
+  careType: 'Vacuna' | 'Desparasitación interna' | 'Desparasitación externa'
   product: string
+  batchNumber: string
   applicationDate: string
   nextDate: string
   observations: string
