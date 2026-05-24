@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { ClipboardList, Download, HeartPulse, House, Stethoscope, Users } from 'lucide-react'
+import { ClipboardList, Download, HeartPulse, House, Stethoscope, Users, WalletCards } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../../features/auth/context/useAuth'
 import { isSupabaseConfigured } from '../../lib/supabaseClient'
@@ -15,6 +15,7 @@ export function AppShell({ children }: AppShellProps) {
     { to: '/tutores', label: 'Tutores', icon: Users },
     { to: '/pacientes', label: 'Pacientes', icon: HeartPulse },
     { to: '/consultas', label: 'Consultas', icon: Stethoscope },
+    { to: '/estado-consultas', label: 'Estado de Consultas', icon: WalletCards },
     { to: '/historial', label: 'Historial Clínico', icon: ClipboardList },
     { to: '/exportar', label: 'Exportar Datos', icon: Download },
   ]

@@ -3,6 +3,7 @@ import { AppShell } from '../components/layout/AppShell'
 import { AuthGate } from '../features/auth/components/AuthGate'
 import { AuthProvider } from '../features/auth/context/AuthProvider'
 import { ClinicRecordsProvider } from '../features/clinic-records/context/ClinicRecordsProvider'
+import { ConsultationStatusPage } from '../features/clinic-records/pages/ConsultationStatusPage'
 import { ConsultationsPage } from '../features/clinic-records/pages/ConsultationsPage'
 import { ExportDataPage } from '../features/clinic-records/pages/ExportDataPage'
 import { HomePage } from '../features/clinic-records/pages/HomePage'
@@ -31,6 +32,7 @@ export function App() {
                       <Route path="/tutores" element={<TutorsPage />} />
                       <Route path="/pacientes" element={<PatientsPage />} />
                       <Route path="/consultas" element={<ConsultationsPage />} />
+                      <Route path="/estado-consultas" element={<ConsultationStatusPage />} />
                       <Route path="/historial" element={<MedicalHistoryPage />} />
                       <Route path="/exportar" element={<ExportDataPage />} />
                       <Route path="*" element={<Navigate to="/home" replace />} />
