@@ -162,6 +162,7 @@ export type Database = {
           observaciones_internas: string | null
           valor: number | null
           estado_pago: string | null
+          metodo_pago: string | null
           fecha_creacion: string | null
         }
         Insert: {
@@ -196,6 +197,7 @@ export type Database = {
           observaciones_internas?: string | null
           valor?: number | null
           estado_pago?: string | null
+          metodo_pago?: string | null
           fecha_creacion?: string | null
         }
         Update: {
@@ -230,6 +232,7 @@ export type Database = {
           observaciones_internas?: string | null
           valor?: number | null
           estado_pago?: string | null
+          metodo_pago?: string | null
           fecha_creacion?: string | null
         }
         Relationships: []

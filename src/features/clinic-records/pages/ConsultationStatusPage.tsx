@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { SectionHeader } from '../../../components/ui/SectionHeader'
 import { useClinicRecordsContext } from '../context/useClinicRecordsContext'
-import { isGenericTutor, type Consultation, type Patient, type PaymentStatus, type Tutor } from '../types/clinicRecords'
+import { isGenericTutor, type Consultation, type Patient, type PaymentMethod, type PaymentStatus, type Tutor } from '../types/clinicRecords'
 
 const paymentStatuses: PaymentStatus[] = ['Pendiente', 'Abonado', 'Pagado', 'Social']
 const filterStatuses: Array<PaymentStatus | 'Todas'> = ['Todas', ...paymentStatuses]
 const periodOptions = ['Mes', 'Semana', 'Año'] as const
+const paymentMethods: PaymentMethod[] = ['Efectivo', 'Transferencia', 'Tarjeta', 'Mixto']
 type PeriodFilter = typeof periodOptions[number]
 
 export function ConsultationStatusPage() {
@@ -36,6 +37,7 @@ export function ConsultationStatusPage() {
             tutor?.phone,
             consultation.reason,
             consultation.paymentStatus,
+            consultation.paymentMethod,
           ]
             .filter(Boolean)
             .join(' ')
@@ -87,6 +89,19 @@ export function ConsultationStatusPage() {
     }
   }
 
+  async function handlePaymentMethodChange(consultationId: Consultation['id'], paymentMethod: PaymentMethod | '') {
+    try {
+      setPaymentMessage(null)
+      setSavingConsultationId(consultationId)
+      await actions.updateConsultation(consultationId, { paymentMethod })
+      setPaymentMessage('Método de pago actualizado correctamente.')
+    } catch {
+      setPaymentMessage('No se pudo actualizar el método de pago. Revisa la conexión o permisos.')
+    } finally {
+      setSavingConsultationId(null)
+    }
+  }
+
   function handlePeriodFilterChange(period: PeriodFilter) {
     setPeriodFilter(period)
     setPeriodValue(getInitialPeriodValue(period))
@@ -113,7 +128,7 @@ export function ConsultationStatusPage() {
             Vista
             <select value={periodFilter} onChange={(event) => handlePeriodFilterChange(event.target.value as PeriodFilter)}>
               {periodOptions.map((period) => (
-                <option key={period}>{period}</option>
+                <option key={period} value={period}>{period}</option>
               ))}
             </select>
           </label>
@@ -129,12 +144,9 @@ export function ConsultationStatusPage() {
 
           <label>
             Estado de pago
-            <select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | 'Todas')}
-            >
+            <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as PaymentStatus | 'Todas')}>
               {filterStatuses.map((status) => (
-                <option key={status}>{status}</option>
+                <option key={status} value={status}>{status}</option>
               ))}
             </select>
           </label>
@@ -181,6 +193,7 @@ export function ConsultationStatusPage() {
                 tutor={tutor}
                 isSaving={savingConsultationId === consultation.id}
                 onPaymentStatusChange={handlePaymentStatusChange}
+                onPaymentMethodChange={handlePaymentMethodChange}
               />
             ))
           )}
@@ -196,6 +209,7 @@ type ConsultationTraceCardProps = {
   tutor?: Tutor
   isSaving: boolean
   onPaymentStatusChange: (consultationId: Consultation['id'], paymentStatus: PaymentStatus) => Promise<void>
+  onPaymentMethodChange: (consultationId: Consultation['id'], paymentMethod: PaymentMethod | '') => Promise<void>
 }
 
 function ConsultationTraceCard({
@@ -204,8 +218,10 @@ function ConsultationTraceCard({
   tutor,
   isSaving,
   onPaymentStatusChange,
+  onPaymentMethodChange,
 }: ConsultationTraceCardProps) {
   const currentPaymentStatus = consultation.paymentStatus || 'Pendiente'
+  const currentPaymentMethod = consultation.paymentMethod || ''
 
   return (
     <article className="consultation-card">
@@ -235,6 +251,10 @@ function ConsultationTraceCard({
             <dt>Microchip</dt>
             <dd>{patient?.microchip || 'No registrado'}</dd>
           </div>
+          <div>
+            <dt>Método de pago</dt>
+            <dd>{currentPaymentMethod || 'Sin registrar'}</dd>
+          </div>
         </dl>
 
         <p>{consultation.reason || 'Sin motivo registrado.'}</p>
@@ -244,15 +264,18 @@ function ConsultationTraceCard({
         <span>{formatCurrency(parseMoneyValue(consultation.value))}</span>
         <label>
           Actualizar pago
-          <select
-            disabled={isSaving}
-            value={currentPaymentStatus}
-            onChange={(event) =>
-              void onPaymentStatusChange(consultation.id, event.target.value as PaymentStatus)
-            }
-          >
+          <select disabled={isSaving} value={currentPaymentStatus} onChange={(event) => void onPaymentStatusChange(consultation.id, event.target.value as PaymentStatus)}>
             {paymentStatuses.map((status) => (
-              <option key={status}>{status}</option>
+              <option key={status} value={status}>{status}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Método de pago
+          <select disabled={isSaving} value={currentPaymentMethod} onChange={(event) => void onPaymentMethodChange(consultation.id, event.target.value as PaymentMethod | '')}>
+            <option value="">Sin registrar</option>
+            {paymentMethods.map((method) => (
+              <option key={method} value={method}>{method}</option>
             ))}
           </select>
         </label>

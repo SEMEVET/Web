@@ -107,6 +107,7 @@ function mapConsultation(row: ConsultationRow): Consultation {
     internalObservations: row.observaciones_internas ?? '',
     value: toStringValue(row.valor),
     paymentStatus: (row.estado_pago ?? '') as Consultation['paymentStatus'],
+    paymentMethod: (row.metodo_pago ?? '') as Consultation['paymentMethod'],
   }
 }
 
@@ -186,6 +187,7 @@ function toConsultationInsert(consultation: Omit<Consultation, 'id'>): Consultat
     observaciones_internas: emptyToNull(consultation.internalObservations),
     valor: toNumberOrNull(consultation.value),
     estado_pago: emptyToNull(consultation.paymentStatus),
+    ...(consultation.paymentMethod ? { metodo_pago: consultation.paymentMethod.trim() } : {}),
   }
 }
 
@@ -229,6 +231,7 @@ function toConsultationUpdate(consultation: Partial<Omit<Consultation, 'id'>>): 
       consultation.internalObservations === undefined ? undefined : emptyToNull(consultation.internalObservations),
     valor: consultation.value === undefined ? undefined : toNumberOrNull(consultation.value),
     estado_pago: consultation.paymentStatus === undefined ? undefined : emptyToNull(consultation.paymentStatus),
+    metodo_pago: consultation.paymentMethod === undefined ? undefined : emptyToNull(consultation.paymentMethod),
   })
 }
 

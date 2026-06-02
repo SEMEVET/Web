@@ -1,4 +1,5 @@
 export type PaymentStatus = 'Pendiente' | 'Abonado' | 'Pagado' | 'Social'
+export type PaymentMethod = 'Efectivo' | 'Transferencia' | 'Tarjeta' | 'Mixto'
 
 export const NO_TUTOR_MARKER = '__NO_TUTOR__'
 
@@ -68,6 +69,7 @@ export type Consultation = {
   internalObservations: string
   value: string
   paymentStatus: PaymentStatus | ''
+  paymentMethod: PaymentMethod | ''
 }
 
 export type PreventiveCare = {

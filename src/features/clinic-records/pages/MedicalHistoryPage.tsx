@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { SectionHeader } from '../../../components/ui/SectionHeader'
 import { useClinicRecordsContext } from '../context/useClinicRecordsContext'
-import type { Patient, Tutor } from '../types/clinicRecords'
+import type { Consultation, Patient, Tutor } from '../types/clinicRecords'
 import { isGenericTutor } from '../types/clinicRecords'
 
 export function MedicalHistoryPage() {
@@ -38,15 +39,23 @@ export function MedicalHistoryPage() {
 
   const filteredRows = useMemo(() => {
     const query = searchTerm.trim().toLowerCase()
-    if (!query) return patientRows
+    if (!query) return []
 
     return patientRows.filter((row) => row.searchText.includes(query))
   }, [patientRows, searchTerm])
 
-  const selectedRow = filteredRows.find((row) => String(row.patient.id) === selectedPatientId) ?? filteredRows[0]
+  const hasSearchTerm = searchTerm.trim().length > 0
+  const selectedRow = hasSearchTerm
+    ? filteredRows.find((row) => String(row.patient.id) === selectedPatientId) ?? filteredRows[0]
+    : undefined
   const selectedPatient = selectedRow?.patient
   const selectedTutor = selectedRow?.tutor
   const selectedTutorName = selectedRow?.tutorName ?? 'Sin tutor registrado'
+  const patientOptions = filteredRows.map(({ patient, tutorName, searchText }) => ({
+    value: String(patient.id),
+    label: `${patient.name} - ${tutorName}`,
+    searchText,
+  }))
 
   const consultations = selectedPatient
     ? records.consultations.filter((consultation) => String(consultation.patientId) === String(selectedPatient.id))
@@ -87,21 +96,14 @@ export function MedicalHistoryPage() {
 
           <label>
             Paciente
-            <select
+            <SearchableSelect
+              disabled={!hasSearchTerm || filteredRows.length === 0}
+              emptyText={hasSearchTerm ? 'Sin resultados' : 'Busca una mascota o tutor primero'}
+              options={patientOptions}
+              placeholder={!hasSearchTerm ? 'Busca una mascota o tutor primero' : filteredRows.length === 0 ? 'Sin resultados' : 'Buscar paciente'}
               value={selectedPatient ? String(selectedPatient.id) : ''}
-              onChange={(event) => setSelectedPatientId(event.target.value)}
-              disabled={filteredRows.length === 0}
-            >
-              {filteredRows.length === 0 ? (
-                <option value="">Sin resultados</option>
-              ) : (
-                filteredRows.map(({ patient, tutorName }) => (
-                  <option key={patient.id} value={patient.id}>
-                    {patient.name} - {tutorName}
-                  </option>
-                ))
-              )}
-            </select>
+              onChange={setSelectedPatientId}
+            />
           </label>
         </div>
       </section>
@@ -111,8 +113,8 @@ export function MedicalHistoryPage() {
           <article className="module-card">
             <SectionHeader
               eyebrow="SIN RESULTADOS"
-              title="No hay historial disponible"
-              description="Registra pacientes o ajusta el filtro de búsqueda."
+              title={hasSearchTerm ? 'No hay historial disponible' : 'Busca un paciente para revisar su historial'}
+              description={hasSearchTerm ? 'Ajusta el filtro de búsqueda.' : 'Ingresa el nombre de la mascota, tutor, teléfono, correo o microchip.'}
             />
           </article>
         ) : (
@@ -140,6 +142,7 @@ export function MedicalHistoryPage() {
                   date: consultation.date,
                   title: consultation.reason,
                   detail: consultation.definitiveDiagnosis || consultation.presumptiveDiagnosis || 'Sin diagnóstico registrado',
+                  consultation,
                 }))}
               />
               <Timeline
@@ -205,6 +208,7 @@ type TimelineProps = {
     date: string
     title: string
     detail: string
+    consultation?: Consultation
   }>
 }
 
@@ -218,15 +222,93 @@ function Timeline({ title, emptyText, items }: TimelineProps) {
         <ol>
           {items.map((item) => (
             <li key={item.id}>
-              <time>{item.date}</time>
-              <strong>{item.title}</strong>
-              <span>{item.detail}</span>
+              {item.consultation ? (
+                <ConsultationHistoryDetail consultation={item.consultation} />
+              ) : (
+                <>
+                  <time>{item.date}</time>
+                  <strong>{item.title}</strong>
+                  <span>{item.detail}</span>
+                </>
+              )}
             </li>
           ))}
         </ol>
       )}
     </div>
   )
+}
+
+type ConsultationHistoryDetailProps = {
+  consultation: Consultation
+}
+
+function ConsultationHistoryDetail({ consultation }: ConsultationHistoryDetailProps) {
+  const vitalSigns = [
+    ['Fecha', consultation.date],
+    ['Tipo atención', consultation.attentionType],
+    ['Método de pago', consultation.paymentMethod],
+    ['Temperatura', formatWithUnit(consultation.temperature, '°C')],
+    ['Frecuencia cardíaca', formatWithUnit(consultation.heartRate, 'lpm')],
+    ['Frecuencia respiratoria', formatWithUnit(consultation.respiratoryRate, 'rpm')],
+    ['Peso', formatWithUnit(consultation.weight, 'kg')],
+    ['Mucosas', consultation.mucousMembranes],
+    ['TLLC', consultation.tllc],
+    ['Hidratación', consultation.hydration],
+    ['Condición corporal', consultation.bodyCondition],
+    ['Dolor', consultation.pain],
+  ]
+
+  const clinicalBlocks = [
+    ['Motivo de consulta', consultation.reason],
+    ['Anamnesis', consultation.anamnesis],
+    ['Antecedentes relevantes', consultation.relevantHistory],
+    ['Examen físico general', consultation.physicalExam],
+    ['Hallazgos clínicos', consultation.clinicalFindings],
+    ['Diagnóstico presuntivo', consultation.presumptiveDiagnosis],
+    ['Diagnósticos diferenciales', consultation.differentialDiagnoses],
+    ['Diagnóstico definitivo', consultation.definitiveDiagnosis],
+    ['Tratamiento aplicado', consultation.treatment],
+    ['Medicamentos indicados', consultation.prescribedMedications],
+    ['Exámenes sugeridos', consultation.suggestedTests],
+    ['Indicaciones al tutor', consultation.indications],
+    ['Criterio de control', consultation.controlCriteria],
+    ['Criterio de derivación', consultation.referralCriteria],
+    ['Próximo control', consultation.nextControl],
+    ['Observaciones internas', consultation.internalObservations],
+  ]
+
+  return (
+    <article className="consultation-history-detail">
+      <header>
+        <time>{consultation.date}</time>
+        <strong>{consultation.reason || 'Consulta sin motivo registrado'}</strong>
+        <span>{consultation.paymentStatus || 'Sin estado de pago'}</span>
+      </header>
+
+      <dl className="consultation-vitals">
+        {vitalSigns.map(([label, value]) => (
+          <div key={label}>
+            <dt>{label}</dt>
+            <dd>{value || 'No registrado'}</dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="consultation-soap-detail">
+        {clinicalBlocks.map(([label, value]) => (
+          <section key={label}>
+            <h4>{label}</h4>
+            <p>{value || 'No registrado'}</p>
+          </section>
+        ))}
+      </div>
+    </article>
+  )
+}
+
+function formatWithUnit(value: string, unit: string) {
+  return value ? `${value} ${unit}` : ''
 }
 
 function findTutor(tutors: Tutor[], tutorId: Patient['tutorId']) {

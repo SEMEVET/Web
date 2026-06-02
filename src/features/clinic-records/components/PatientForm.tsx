@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { NO_TUTOR_MARKER, isGenericTutor, type Patient, type Tutor } from '../types/clinicRecords'
 
 type PatientFormProps = {
@@ -27,8 +28,6 @@ const initialForm = {
   animalHousemates: '',
 }
 
-const ageOptions = Array.from({ length: 21 }, (_, index) => String(index))
-
 type PatientField = keyof typeof initialForm
 type PatientErrors = Partial<Record<PatientField, string>>
 
@@ -39,6 +38,11 @@ export function PatientForm({ tutors, onSubmit }: PatientFormProps) {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const selectableTutors = tutors.filter((tutor) => !isGenericTutor(tutor))
   const hasTutors = selectableTutors.length > 0
+  const tutorOptions = selectableTutors.map((tutor) => ({
+    value: String(tutor.id),
+    label: tutor.fullName,
+    searchText: `${tutor.phone} ${tutor.email} ${tutor.comuna}`,
+  }))
 
   function updateField(field: PatientField, value: string | boolean) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -133,23 +137,18 @@ export function PatientForm({ tutors, onSubmit }: PatientFormProps) {
       {!form.withoutTutor && (
         <label className={errors.tutorId ? 'field-error' : undefined}>
           <span className="field-label">Nombre tutor <span className="required-mark">*</span></span>
-          <select
-            required
-            value={form.tutorId}
+          <SearchableSelect
             disabled={!hasTutors}
-            onChange={(event) => {
-              const tutor = selectableTutors.find((currentTutor) => String(currentTutor.id) === event.target.value)
-              updateField('tutorId', event.target.value)
+            emptyText="No hay tutores que coincidan"
+            options={tutorOptions}
+            placeholder={hasTutors ? 'Buscar tutor' : 'Registra un tutor primero'}
+            value={form.tutorId}
+            onChange={(value) => {
+              const tutor = selectableTutors.find((currentTutor) => String(currentTutor.id) === value)
+              updateField('tutorId', value)
               updateField('tutorName', tutor?.fullName ?? '')
             }}
-          >
-            <option value="">{hasTutors ? 'Seleccionar tutor' : 'Registra un tutor primero'}</option>
-            {selectableTutors.map((tutor) => (
-              <option key={tutor.id} value={tutor.id}>
-                {tutor.fullName}
-              </option>
-            ))}
-          </select>
+          />
           {errors.tutorId && <small className="field-error-text">{errors.tutorId}</small>}
         </label>
       )}
@@ -170,15 +169,22 @@ export function PatientForm({ tutors, onSubmit }: PatientFormProps) {
       <label className={errors.species ? 'field-error' : undefined}>
         <span className="field-label">Especie <span className="required-mark">*</span></span>
         <select required value={form.species} onChange={(event) => updateField('species', event.target.value)}>
-          <option value="">Seleccionar especie</option>
+          <option value="">Seleccionar</option>
           <option value="Felino">Felino</option>
           <option value="Canino">Canino</option>
         </select>
         {errors.species && <small className="field-error-text">{errors.species}</small>}
       </label>
       <label>Raza<input value={form.breed} onChange={(event) => updateField('breed', event.target.value)} /></label>
-      <label>Sexo<select value={form.sex} onChange={(event) => updateField('sex', event.target.value)}><option value="">Seleccionar</option><option>Macho</option><option>Hembra</option></select></label>
-      <label>Edad<select value={form.age} onChange={(event) => updateField('age', event.target.value)}><option value="">Seleccionar edad</option>{ageOptions.map((age) => <option key={age} value={age}>{age}</option>)}</select></label>
+      <label>
+        Sexo
+        <select value={form.sex} onChange={(event) => updateField('sex', event.target.value)}>
+          <option value="">Seleccionar</option>
+          <option value="Macho">Macho</option>
+          <option value="Hembra">Hembra</option>
+        </select>
+      </label>
+      <label>Edad<input placeholder="Ej: 3 años, 6 meses" value={form.age} onChange={(event) => updateField('age', event.target.value)} /></label>
       <label className={errors.weight ? 'field-error' : undefined}>Peso<input type="text" inputMode="decimal" placeholder="Ej: 6,5" value={form.weight} onChange={(event) => updateField('weight', event.target.value)} />{errors.weight && <small className="field-error-text">{errors.weight}</small>}</label>
       <label>Microchip<input value={form.microchip} onChange={(event) => updateField('microchip', event.target.value)} /></label>
       <label className="switch-field">Esterilizado<button type="button" className={form.sterilized ? 'switch is-on' : 'switch'} onClick={() => updateField('sterilized', !form.sterilized)} aria-pressed={form.sterilized}><span />{form.sterilized ? 'Sí' : 'No'}</button></label>

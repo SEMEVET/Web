@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { isGenericTutor, type Patient, type PreventiveCare, type Tutor } from '../types/clinicRecords'
 
 type PreventiveCareFormProps = {
@@ -31,7 +32,7 @@ const initialDewormingForm: PreventiveCareFields = {
   observations: '',
 }
 
-const vaccineTypes = ['Antirrábica', 'Óctuple', 'Triple felina', 'Traqueobronquitis']
+const vaccineTypes = ['Antirrábica', 'Óctuple', 'Triple felina', 'Traqueobronquitis', 'Leucemia']
 const dewormingTypes: PreventiveCare['careType'][] = ['Desparasitación interna', 'Desparasitación externa', 'Ambas']
 
 export function PreventiveCareForm({ patients, tutors, onSubmit }: PreventiveCareFormProps) {
@@ -92,6 +93,11 @@ function PreventiveCareSubform({
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const hasPatients = patients.length > 0
   const isVaccineForm = form.careType === 'Vacuna'
+  const patientOptions = patients.map((patient) => ({
+    value: String(patient.id),
+    label: formatPatientOption(patient, tutors),
+    searchText: `${patient.name} ${patient.species} ${patient.breed} ${patient.microchip}`,
+  }))
 
   function updateField<Field extends keyof PreventiveCareFields>(field: Field, value: PreventiveCareFields[Field]) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -155,14 +161,14 @@ function PreventiveCareSubform({
 
       <label className={errors.patientId ? 'field-error' : undefined}>
         <span className="field-label">Nombre paciente <span className="required-mark">*</span></span>
-        <select required disabled={!hasPatients} value={form.patientId} onChange={(event) => updateField('patientId', event.target.value)}>
-          <option value="">{hasPatients ? 'Seleccionar paciente' : 'Registra un paciente primero'}</option>
-          {patients.map((patient) => (
-            <option key={patient.id} value={patient.id}>
-              {formatPatientOption(patient, tutors)}
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          disabled={!hasPatients}
+          emptyText="No hay pacientes que coincidan"
+          options={patientOptions}
+          placeholder={hasPatients ? 'Buscar paciente' : 'Registra un paciente primero'}
+          value={String(form.patientId)}
+          onChange={(value) => updateField('patientId', value)}
+        />
         {errors.patientId && <small className="field-error-text">{errors.patientId}</small>}
       </label>
 
@@ -172,7 +178,7 @@ function PreventiveCareSubform({
           <select required value={form.product} onChange={(event) => updateField('product', event.target.value)}>
             <option value="">Seleccionar vacuna</option>
             {productOptions.map((option) => (
-              <option key={option}>{option}</option>
+              <option key={option} value={option}>{option}</option>
             ))}
           </select>
           {errors.product && <small className="field-error-text">{errors.product}</small>}
@@ -183,7 +189,7 @@ function PreventiveCareSubform({
             <span className="field-label">Tipo <span className="required-mark">*</span></span>
             <select value={form.careType} onChange={(event) => updateField('careType', event.target.value as PreventiveCare['careType'])}>
               {dewormingTypes.map((type) => (
-                <option key={type}>{type}</option>
+                <option key={type} value={type}>{type}</option>
               ))}
             </select>
             {errors.careType && <small className="field-error-text">{errors.careType}</small>}

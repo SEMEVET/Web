@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { isGenericTutor, type Consultation, type Patient, type PaymentStatus, type Tutor } from '../types/clinicRecords'
 
 type ConsultationFormProps = {
@@ -39,6 +40,7 @@ const initialForm = {
   internalObservations: '',
   value: '',
   paymentStatus: '',
+  paymentMethod: '',
 }
 
 type ConsultationField = keyof typeof initialForm
@@ -68,6 +70,11 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const hasPatients = patients.length > 0
+  const patientOptions = patients.map((patient) => ({
+    value: String(patient.id),
+    label: formatPatientOption(patient, tutors),
+    searchText: `${patient.name} ${patient.species} ${patient.breed} ${patient.microchip}`,
+  }))
 
   function updateField(field: ConsultationField, value: string) {
     setForm((current) => ({ ...current, [field]: value }))
@@ -142,6 +149,7 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       internalObservations: form.internalObservations.trim(),
       value: normalizeDecimalValue(form.value),
       paymentStatus: form.paymentStatus.trim() as PaymentStatus | '',
+      paymentMethod: '',
     }
 
     try {
@@ -167,14 +175,14 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
     <form className="record-form" onSubmit={handleSubmit} noValidate>
       <label className={errors.patientId ? 'field-error' : undefined}>
         <span className="field-label">Nombre paciente <span className="required-mark">*</span></span>
-        <select required disabled={!hasPatients} value={form.patientId} onChange={(event) => updateField('patientId', event.target.value)}>
-          <option value="">{hasPatients ? 'Seleccionar paciente' : 'Registra un paciente primero'}</option>
-          {patients.map((patient) => (
-            <option key={patient.id} value={patient.id}>
-              {formatPatientOption(patient, tutors)}
-            </option>
-          ))}
-        </select>
+        <SearchableSelect
+          disabled={!hasPatients}
+          emptyText="No hay pacientes que coincidan"
+          options={patientOptions}
+          placeholder={hasPatients ? 'Buscar paciente' : 'Registra un paciente primero'}
+          value={form.patientId}
+          onChange={(value) => updateField('patientId', value)}
+        />
         {errors.patientId && <small className="field-error-text">{errors.patientId}</small>}
       </label>
       <label className={errors.date ? 'field-error' : undefined}>
@@ -196,10 +204,10 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
         <span className="field-label">Estado de pago <span className="required-mark">*</span></span>
         <select required value={form.paymentStatus} onChange={(event) => updateField('paymentStatus', event.target.value)}>
           <option value="">Seleccionar</option>
-          <option>Pendiente</option>
-          <option>Abonado</option>
-          <option>Pagado</option>
-          <option>Social</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Abonado">Abonado</option>
+          <option value="Pagado">Pagado</option>
+          <option value="Social">Social</option>
         </select>
         {errors.paymentStatus && <small className="field-error-text">{errors.paymentStatus}</small>}
       </label>

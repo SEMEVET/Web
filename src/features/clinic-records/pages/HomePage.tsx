@@ -1,7 +1,6 @@
 import { ClipboardList, HeartPulse, ShieldCheck, Stethoscope, Users } from 'lucide-react'
 import { MetricCard } from '../../../components/ui/MetricCard'
 import { SectionHeader } from '../../../components/ui/SectionHeader'
-import { isSupabaseConfigured } from '../../../lib/supabaseClient'
 import { useClinicRecordsContext } from '../context/useClinicRecordsContext'
 
 export function HomePage() {
@@ -21,10 +20,10 @@ export function HomePage() {
         </div>
         <div className="hero-card">
           <Stethoscope size={28} aria-hidden="true" />
-          <strong>{isSupabaseConfigured ? 'Supabase conectado' : 'Modo local de prueba'}</strong>
+          <strong>Panel clínico operativo</strong>
           <p>
-            La app está preparada para operar con tablas clínicas simples y crecer por
-            módulos sin agregar complejidad innecesaria.
+            Registro centralizado para seguimiento de tutores, pacientes, consultas,
+            prevención y trazabilidad administrativa de cada atención.
           </p>
         </div>
       </section>

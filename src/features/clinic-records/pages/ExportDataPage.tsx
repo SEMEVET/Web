@@ -94,6 +94,7 @@ export function ExportDataPage() {
           'observaciones_internas',
           'valor',
           'estado_pago',
+          'metodo_pago',
         ],
         ...records.consultations.map((consultation) => [
           String(consultation.id),
@@ -127,6 +128,7 @@ export function ExportDataPage() {
           consultation.internalObservations,
           consultation.value,
           consultation.paymentStatus,
+          consultation.paymentMethod,
         ]),
       ]),
       createCsv('prevencion', [
