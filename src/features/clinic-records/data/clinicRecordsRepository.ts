@@ -34,6 +34,10 @@ function toStringValue(value: number | null) {
   return value === null ? '' : String(value)
 }
 
+function normalizePhoneForDatabase(value: string) {
+  return value.replace(/\D/g, '')
+}
+
 function removeUndefined<T extends Record<string, unknown>>(payload: T) {
   return Object.fromEntries(
     Object.entries(payload).filter(([, value]) => value !== undefined),
@@ -127,7 +131,7 @@ function mapPreventiveCare(row: PreventiveCareRow): PreventiveCare {
 function toTutorInsert(tutor: Omit<Tutor, 'id'>): TutorInsert {
   return {
     nombre: tutor.fullName.trim(),
-    telefono: tutor.phone.trim(),
+    telefono: normalizePhoneForDatabase(tutor.phone),
     correo: emptyToNull(tutor.email),
     direccion: tutor.address.trim(),
     comuna: emptyToNull(tutor.comuna),

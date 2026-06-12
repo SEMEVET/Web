@@ -32,12 +32,13 @@ export function TutorForm({ onSubmit }: TutorFormProps) {
 
   function validateForm() {
     const nextErrors: TutorErrors = {}
+    const normalizedPhone = normalizePhoneNumber(form.phone)
 
     if (!form.fullName.trim()) nextErrors.fullName = 'Ingresa el nombre del tutor.'
     if (!form.phone.trim()) {
       nextErrors.phone = 'Ingresa el teléfono del tutor.'
-    } else if (!/^\+?\d[\d\s-]{6,}$/.test(form.phone.trim())) {
-      nextErrors.phone = 'El teléfono debe contener solo números, espacios, guion o +.'
+    } else if (!normalizedPhone || normalizedPhone.length < 8) {
+      nextErrors.phone = 'Ingresa un teléfono válido. Puedes escribirlo con +56, espacios o guiones.'
     }
     if (form.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
       nextErrors.email = 'Ingresa un correo válido.'
@@ -58,7 +59,7 @@ export function TutorForm({ onSubmit }: TutorFormProps) {
 
     const payload = {
       fullName: form.fullName.trim(),
-      phone: form.phone.trim(),
+      phone: normalizePhoneNumber(form.phone),
       email: form.email.trim(),
       address: form.address.trim(),
       comuna: form.comuna.trim(),
@@ -71,10 +72,10 @@ export function TutorForm({ onSubmit }: TutorFormProps) {
       setForm(initialForm)
       setErrors({})
       setMessage({ type: 'success', text: 'Tutor guardado correctamente en Supabase.' })
-    } catch {
+    } catch (saveError) {
       setMessage({
         type: 'error',
-        text: 'No se pudo guardar el tutor. Revisa permisos RLS o conexión de Supabase.',
+        text: getTutorSaveErrorMessage(saveError),
       })
     } finally {
       setIsSaving(false)
@@ -146,4 +147,22 @@ export function TutorForm({ onSubmit }: TutorFormProps) {
       </button>
     </form>
   )
+}
+
+function normalizePhoneNumber(value: string) {
+  return value.replace(/\D/g, '')
+}
+
+function getTutorSaveErrorMessage(error: unknown) {
+  const message = error instanceof Error
+    ? error.message
+    : typeof error === 'object' && error !== null && 'message' in error
+      ? String((error as { message?: unknown }).message ?? '')
+      : ''
+
+  if (message.toLowerCase().includes('telefono') || message.toLowerCase().includes('numeric')) {
+    return 'No se pudo guardar el tutor. Revisa el teléfono: la base solo acepta números, sin + ni espacios.'
+  }
+
+  return 'No se pudo guardar el tutor. Revisa permisos RLS o conexión de Supabase.'
 }
