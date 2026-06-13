@@ -709,6 +709,58 @@ a {
   line-height: 1.4;
 }
 
+.patient-result-list {
+  margin-top: 18px;
+}
+
+.patient-detail-card {
+  gap: 18px;
+}
+
+.patient-detail-card header {
+  display: grid;
+  gap: 6px;
+}
+
+.patient-detail-card header span {
+  color: var(--semevet-teal);
+  font-size: 0.74rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.patient-detail-card header strong {
+  font-size: 1.25rem;
+}
+
+.patient-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0;
+}
+
+.patient-detail-grid div {
+  border: 1px solid rgba(198, 219, 220, 0.75);
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 12px;
+}
+
+.patient-detail-grid dt {
+  color: var(--semevet-muted);
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.patient-detail-grid dd {
+  margin: 6px 0 0;
+  color: var(--semevet-ink);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
 .activity-panel {
   display: grid;
   gap: 8px;
@@ -1316,6 +1368,7 @@ a {
   .consultation-toolbar,
   .consultation-card,
   .consultation-meta,
+  .patient-detail-grid,
   .consultation-vitals,
   .consultation-soap-detail {
     grid-template-columns: 1fr;
