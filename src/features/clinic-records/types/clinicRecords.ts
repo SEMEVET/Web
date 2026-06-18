@@ -80,6 +80,17 @@ export type PreventiveCare = {
   batchNumber: string
   applicationDate: string
   nextDate: string
+  value: string
+  observations: string
+}
+
+export type ClinicalExam = {
+  id: number | string
+  patientId: number | string
+  examType: string
+  value: string
+  sampleDate: string
+  sampleType: string
   observations: string
 }
 
@@ -88,6 +99,7 @@ export type ClinicRecords = {
   patients: Patient[]
   consultations: Consultation[]
   preventiveCare: PreventiveCare[]
+  exams: ClinicalExam[]
 }
 
 export function isGenericTutor(tutor?: Tutor) {

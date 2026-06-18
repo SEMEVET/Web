@@ -1,4 +1,5 @@
 import { SectionHeader } from '../../../components/ui/SectionHeader'
+import { ClinicalExamForm } from '../components/ClinicalExamForm'
 import { ConsultationForm } from '../components/ConsultationForm'
 import { PreventiveCareForm } from '../components/PreventiveCareForm'
 import { useClinicRecordsContext } from '../context/useClinicRecordsContext'
@@ -34,6 +35,18 @@ export function ConsultationsPage() {
             patients={records.patients}
             tutors={records.tutors}
             onSubmit={actions.addPreventiveCare}
+          />
+        </article>
+
+        <article className="module-card">
+          <SectionHeader
+            eyebrow="EXÁMENES"
+            title="Registrar examen"
+          />
+          <ClinicalExamForm
+            patients={records.patients}
+            tutors={records.tutors}
+            onSubmit={actions.addClinicalExam}
           />
         </article>
       </section>

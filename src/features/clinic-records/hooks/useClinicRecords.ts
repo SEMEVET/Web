@@ -3,6 +3,7 @@ import { isSupabaseConfigured } from '../../../lib/supabaseClient'
 import {
   fetchClinicRecords,
   getOrCreateGenericTutor,
+  insertClinicalExam,
   insertConsultation,
   insertPatient,
   insertPreventiveCare,
@@ -14,6 +15,7 @@ import {
 } from '../data/clinicRecordsRepository'
 import type {
   ClinicRecords,
+  ClinicalExam,
   Consultation,
   Patient,
   PreventiveCare,
@@ -31,6 +33,7 @@ const initialRecords: ClinicRecords = {
   patients: [],
   consultations: [],
   preventiveCare: [],
+  exams: [],
 }
 
 function createId() {
@@ -214,6 +217,19 @@ export function useClinicRecords() {
         }))
 
         return savedPreventiveCare
+      },
+      async addClinicalExam(exam: Omit<ClinicalExam, 'id'>) {
+        setError(null)
+        const savedExam = isSupabaseConfigured
+          ? await insertClinicalExam(exam)
+          : { ...exam, id: createId() }
+
+        setRecords((current) => ({
+          ...current,
+          exams: [savedExam, ...current.exams],
+        }))
+
+        return savedExam
       },
       async updatePreventiveCare(id: PreventiveCare['id'], preventiveCare: Partial<Omit<PreventiveCare, 'id'>>) {
         setError(null)

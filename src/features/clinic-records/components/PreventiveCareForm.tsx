@@ -19,6 +19,7 @@ const initialVaccineForm: PreventiveCareFields = {
   batchNumber: '',
   applicationDate: '',
   nextDate: '',
+  value: '',
   observations: '',
 }
 
@@ -29,6 +30,7 @@ const initialDewormingForm: PreventiveCareFields = {
   batchNumber: '',
   applicationDate: '',
   nextDate: '',
+  value: '',
   observations: '',
 }
 
@@ -112,6 +114,11 @@ function PreventiveCareSubform({
     if (!form.careType) nextErrors.careType = 'Selecciona el tipo.'
     if (!form.product.trim()) nextErrors.product = isVaccineForm ? 'Selecciona el tipo de vacuna.' : 'Ingresa el producto aplicado.'
     if (!form.applicationDate) nextErrors.applicationDate = 'Selecciona la fecha de aplicación.'
+    if (!form.value.trim()) nextErrors.value = 'Ingresa el valor.'
+    if (form.value.trim() && !isValidNumber(form.value)) nextErrors.value = 'El valor debe ser numérico. Puedes usar coma o punto.'
+    if (form.value.trim() && isValidNumber(form.value) && Number(normalizeDecimalValue(form.value)) < 0) {
+      nextErrors.value = 'El valor no puede ser negativo.'
+    }
 
     setErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
@@ -129,6 +136,7 @@ function PreventiveCareSubform({
       ...form,
       product: form.product.trim(),
       batchNumber: form.batchNumber.trim(),
+      value: normalizeDecimalValue(form.value),
       observations: form.observations.trim(),
     }
 
@@ -214,6 +222,11 @@ function PreventiveCareSubform({
         <input required type="date" value={form.applicationDate} onChange={(event) => updateField('applicationDate', event.target.value)} />
         {errors.applicationDate && <small className="field-error-text">{errors.applicationDate}</small>}
       </label>
+      <label className={errors.value ? 'field-error' : undefined}>
+        <span className="field-label">Valor <span className="required-mark">*</span></span>
+        <input required inputMode="decimal" value={form.value} onChange={(event) => updateField('value', event.target.value)} />
+        {errors.value && <small className="field-error-text">{errors.value}</small>}
+      </label>
       <label>
         Próxima aplicación
         <input type="date" value={form.nextDate} onChange={(event) => updateField('nextDate', event.target.value)} />
@@ -240,6 +253,14 @@ function getErrorMessage(error: unknown) {
   }
 
   return ''
+}
+
+function isValidNumber(value: string) {
+  return Number.isFinite(Number(normalizeDecimalValue(value)))
+}
+
+function normalizeDecimalValue(value: string) {
+  return value.trim().replace(',', '.')
 }
 
 function formatPatientOption(patient: Patient, tutors: Tutor[]) {

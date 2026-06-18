@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { SectionHeader } from '../../../components/ui/SectionHeader'
 import { useClinicRecordsContext } from '../context/useClinicRecordsContext'
-import type { Consultation, Patient, Tutor } from '../types/clinicRecords'
+import type { ClinicalExam, Consultation, Patient, Tutor } from '../types/clinicRecords'
 import { isGenericTutor } from '../types/clinicRecords'
 
 export function MedicalHistoryPage() {
@@ -62,6 +62,9 @@ export function MedicalHistoryPage() {
     : []
   const preventiveCare = selectedPatient
     ? records.preventiveCare.filter((care) => String(care.patientId) === String(selectedPatient.id))
+    : []
+  const exams = selectedPatient
+    ? records.exams.filter((exam) => String(exam.patientId) === String(selectedPatient.id))
     : []
 
   return (
@@ -128,7 +131,7 @@ export function MedicalHistoryPage() {
                 </p>
                 <p>Tutor: {selectedTutorName}</p>
               </div>
-              <strong>{consultations.length + preventiveCare.length} eventos</strong>
+              <strong>{consultations.length + preventiveCare.length + exams.length} eventos</strong>
             </header>
 
             <PatientSummary patient={selectedPatient} tutor={selectedTutor} tutorName={selectedTutorName} />
@@ -152,7 +155,20 @@ export function MedicalHistoryPage() {
                   id: String(care.id),
                   date: care.applicationDate || 'Fecha de aplicación no registrada',
                   title: `${care.careType}: ${care.product}`,
-                  detail: care.nextDate ? `Próxima fecha: ${care.nextDate}` : 'Sin próxima fecha',
+                  detail: [
+                    care.value ? `Valor: ${formatCurrency(parseMoneyValue(care.value))}` : 'Sin valor registrado',
+                    care.nextDate ? `Próxima fecha: ${care.nextDate}` : 'Sin próxima fecha',
+                  ].join(' · '),
+                }))}
+              />
+              <Timeline
+                title="Exámenes"
+                emptyText="Sin exámenes registrados."
+                items={exams.map((exam) => ({
+                  id: String(exam.id),
+                  date: exam.sampleDate,
+                  title: exam.examType,
+                  detail: formatExamDetail(exam),
                 }))}
               />
             </div>
@@ -309,6 +325,29 @@ function ConsultationHistoryDetail({ consultation }: ConsultationHistoryDetailPr
 
 function formatWithUnit(value: string, unit: string) {
   return value ? `${value} ${unit}` : ''
+}
+
+function parseMoneyValue(value: string) {
+  const numericValue = Number(String(value).replace(/[^\d.-]/g, ''))
+  return Number.isFinite(numericValue) ? numericValue : 0
+}
+
+function formatCurrency(value: number) {
+  return new Intl.NumberFormat('es-CL', {
+    currency: 'CLP',
+    maximumFractionDigits: 0,
+    style: 'currency',
+  }).format(value)
+}
+
+function formatExamDetail(exam: ClinicalExam) {
+  return [
+    exam.value ? `Valor: ${formatCurrency(parseMoneyValue(exam.value))}` : 'Sin valor registrado',
+    exam.sampleType ? `Muestra: ${exam.sampleType}` : 'Sin tipo de muestra',
+    exam.observations || '',
+  ]
+    .filter(Boolean)
+    .join(' · ')
 }
 
 function findTutor(tutors: Tutor[], tutorId: Patient['tutorId']) {

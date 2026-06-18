@@ -132,7 +132,7 @@ export function ExportDataPage() {
         ]),
       ]),
       createCsv('prevencion', [
-        ['id', 'paciente_id', 'tipo', 'producto', 'numero_lote', 'fecha_aplicacion', 'proxima_fecha', 'observaciones'],
+        ['id', 'paciente_id', 'tipo', 'producto', 'numero_lote', 'fecha_aplicacion', 'proxima_fecha', 'valor', 'observaciones'],
         ...records.preventiveCare.map((care) => [
           String(care.id),
           String(care.patientId),
@@ -141,7 +141,20 @@ export function ExportDataPage() {
           care.batchNumber,
           care.applicationDate,
           care.nextDate,
+          care.value,
           care.observations,
+        ]),
+      ]),
+      createCsv('examenes', [
+        ['id', 'paciente_id', 'tipo_examen', 'valor', 'fecha_toma_muestra', 'tipo_muestra', 'observaciones'],
+        ...records.exams.map((exam) => [
+          String(exam.id),
+          String(exam.patientId),
+          exam.examType,
+          exam.value,
+          exam.sampleDate,
+          exam.sampleType,
+          exam.observations,
         ]),
       ]),
     ].join('\n\n')
@@ -210,6 +223,10 @@ function ExportSummary({ records }: { records: ClinicRecords }) {
       <div>
         <dt>Prevención</dt>
         <dd>{records.preventiveCare.length}</dd>
+      </div>
+      <div>
+        <dt>Exámenes</dt>
+        <dd>{records.exams.length}</dd>
       </div>
     </dl>
   )

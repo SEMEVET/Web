@@ -2,6 +2,7 @@ import { getSupabaseClient } from '../../../lib/supabaseClient'
 import type { Database } from '../../../lib/database.types'
 import type {
   ClinicRecords,
+  ClinicalExam,
   Consultation,
   Patient,
   PreventiveCare,
@@ -18,6 +19,8 @@ type ConsultationInsert = Database['public']['Tables']['consultas']['Insert']
 type ConsultationUpdate = Database['public']['Tables']['consultas']['Update']
 type PreventiveCareRow = Database['public']['Tables']['vacunas_desparasitaciones']['Row']
 type PreventiveCareInsert = Database['public']['Tables']['vacunas_desparasitaciones']['Insert']
+type ClinicalExamRow = Database['public']['Tables']['examenes']['Row']
+type ClinicalExamInsert = Database['public']['Tables']['examenes']['Insert']
 
 function emptyToNull(value: string) {
   return value.trim() === '' ? null : value.trim()
@@ -124,6 +127,19 @@ function mapPreventiveCare(row: PreventiveCareRow): PreventiveCare {
     batchNumber: row.numero_lote ?? '',
     applicationDate: row.fecha_aplicacion ?? '',
     nextDate: row.proxima_fecha ?? '',
+    value: toStringValue(row.valor),
+    observations: row.observaciones ?? '',
+  }
+}
+
+function mapClinicalExam(row: ClinicalExamRow): ClinicalExam {
+  return {
+    id: row.id,
+    patientId: row.paciente_id,
+    examType: row.tipo_examen,
+    value: toStringValue(row.valor),
+    sampleDate: row.fecha_toma_muestra,
+    sampleType: row.tipo_muestra ?? '',
     observations: row.observaciones ?? '',
   }
 }
@@ -247,30 +263,45 @@ function toPreventiveCareInsert(preventiveCare: Omit<PreventiveCare, 'id'>): Pre
     numero_lote: emptyToNull(preventiveCare.batchNumber),
     fecha_aplicacion: preventiveCare.applicationDate,
     proxima_fecha: emptyToNull(preventiveCare.nextDate),
+    valor: toNumberOrNull(preventiveCare.value),
     observaciones: emptyToNull(preventiveCare.observations),
+  }
+}
+
+function toClinicalExamInsert(exam: Omit<ClinicalExam, 'id'>): ClinicalExamInsert {
+  return {
+    paciente_id: Number(exam.patientId),
+    tipo_examen: exam.examType.trim(),
+    valor: toNumberOrNull(exam.value),
+    fecha_toma_muestra: exam.sampleDate,
+    tipo_muestra: emptyToNull(exam.sampleType),
+    observaciones: emptyToNull(exam.observations),
   }
 }
 
 export async function fetchClinicRecords(): Promise<ClinicRecords> {
   const client = getSupabaseClient()
 
-  const [tutors, patients, consultations, preventiveCare] = await Promise.all([
+  const [tutors, patients, consultations, preventiveCare, exams] = await Promise.all([
     client.from('tutores').select('*').order('id', { ascending: false }),
     client.from('pacientes').select('*').order('id', { ascending: false }),
     client.from('consultas').select('*').order('id', { ascending: false }),
     client.from('vacunas_desparasitaciones').select('*').order('id', { ascending: false }),
+    client.from('examenes').select('*').order('id', { ascending: false }),
   ])
 
   if (tutors.error) throw tutors.error
   if (patients.error) throw patients.error
   if (consultations.error) throw consultations.error
   if (preventiveCare.error) throw preventiveCare.error
+  if (exams.error) throw exams.error
 
   return {
     tutors: tutors.data.map(mapTutor),
     patients: patients.data.map(mapPatient),
     consultations: consultations.data.map(mapConsultation),
     preventiveCare: preventiveCare.data.map(mapPreventiveCare),
+    exams: exams.data.map(mapClinicalExam),
   }
 }
 
@@ -379,6 +410,17 @@ export async function insertPreventiveCare(preventiveCare: Omit<PreventiveCare, 
   return mapPreventiveCare(data)
 }
 
+export async function insertClinicalExam(exam: Omit<ClinicalExam, 'id'>) {
+  const { data, error } = await getSupabaseClient()
+    .from('examenes')
+    .insert(toClinicalExamInsert(exam))
+    .select()
+    .single()
+
+  if (error) throw error
+  return mapClinicalExam(data)
+}
+
 export async function updatePreventiveCare(
   id: PreventiveCare['id'],
   preventiveCare: Partial<Omit<PreventiveCare, 'id'>>,
@@ -429,5 +471,6 @@ const emptyPreventiveCare: Omit<PreventiveCare, 'id'> = {
   batchNumber: '',
   applicationDate: '',
   nextDate: '',
+  value: '',
   observations: '',
 }

@@ -246,6 +246,7 @@ export type Database = {
           numero_lote: string | null
           fecha_aplicacion: string | null
           proxima_fecha: string | null
+          valor: number | null
           observaciones: string | null
           fecha_creacion: string | null
         }
@@ -257,6 +258,7 @@ export type Database = {
           numero_lote?: string | null
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
+          valor?: number | null
           observaciones?: string | null
           fecha_creacion?: string | null
         }
@@ -268,6 +270,40 @@ export type Database = {
           numero_lote?: string | null
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
+          valor?: number | null
+          observaciones?: string | null
+          fecha_creacion?: string | null
+        }
+        Relationships: []
+      }
+      examenes: {
+        Row: {
+          id: number
+          paciente_id: number
+          tipo_examen: string
+          valor: number | null
+          fecha_toma_muestra: string
+          tipo_muestra: string | null
+          observaciones: string | null
+          fecha_creacion: string | null
+        }
+        Insert: {
+          id?: number
+          paciente_id: number
+          tipo_examen: string
+          valor?: number | null
+          fecha_toma_muestra: string
+          tipo_muestra?: string | null
+          observaciones?: string | null
+          fecha_creacion?: string | null
+        }
+        Update: {
+          id?: number
+          paciente_id?: number
+          tipo_examen?: string
+          valor?: number | null
+          fecha_toma_muestra?: string
+          tipo_muestra?: string | null
           observaciones?: string | null
           fecha_creacion?: string | null
         }
