@@ -19,8 +19,10 @@ type ConsultationInsert = Database['public']['Tables']['consultas']['Insert']
 type ConsultationUpdate = Database['public']['Tables']['consultas']['Update']
 type PreventiveCareRow = Database['public']['Tables']['vacunas_desparasitaciones']['Row']
 type PreventiveCareInsert = Database['public']['Tables']['vacunas_desparasitaciones']['Insert']
+type PreventiveCareUpdate = Database['public']['Tables']['vacunas_desparasitaciones']['Update']
 type ClinicalExamRow = Database['public']['Tables']['examenes']['Row']
 type ClinicalExamInsert = Database['public']['Tables']['examenes']['Insert']
+type ClinicalExamUpdate = Database['public']['Tables']['examenes']['Update']
 
 function emptyToNull(value: string) {
   return value.trim() === '' ? null : value.trim()
@@ -128,6 +130,7 @@ function mapPreventiveCare(row: PreventiveCareRow): PreventiveCare {
     applicationDate: row.fecha_aplicacion ?? '',
     nextDate: row.proxima_fecha ?? '',
     value: toStringValue(row.valor),
+    paymentMethod: (row.metodo_pago ?? '') as PreventiveCare['paymentMethod'],
     observations: row.observaciones ?? '',
   }
 }
@@ -138,6 +141,7 @@ function mapClinicalExam(row: ClinicalExamRow): ClinicalExam {
     patientId: row.paciente_id,
     examType: row.tipo_examen,
     value: toStringValue(row.valor),
+    paymentMethod: (row.metodo_pago ?? '') as ClinicalExam['paymentMethod'],
     sampleDate: row.fecha_toma_muestra,
     sampleType: row.tipo_muestra ?? '',
     observations: row.observaciones ?? '',
@@ -264,8 +268,23 @@ function toPreventiveCareInsert(preventiveCare: Omit<PreventiveCare, 'id'>): Pre
     fecha_aplicacion: preventiveCare.applicationDate,
     proxima_fecha: emptyToNull(preventiveCare.nextDate),
     valor: toNumberOrNull(preventiveCare.value),
+    metodo_pago: emptyToNull(preventiveCare.paymentMethod),
     observaciones: emptyToNull(preventiveCare.observations),
   }
+}
+
+function toPreventiveCareUpdate(preventiveCare: Partial<Omit<PreventiveCare, 'id'>>): PreventiveCareUpdate {
+  return removeUndefined({
+    paciente_id: preventiveCare.patientId === undefined ? undefined : Number(preventiveCare.patientId),
+    tipo: preventiveCare.careType,
+    producto: preventiveCare.product === undefined ? undefined : preventiveCare.product.trim(),
+    numero_lote: preventiveCare.batchNumber === undefined ? undefined : emptyToNull(preventiveCare.batchNumber),
+    fecha_aplicacion: preventiveCare.applicationDate,
+    proxima_fecha: preventiveCare.nextDate === undefined ? undefined : emptyToNull(preventiveCare.nextDate),
+    valor: preventiveCare.value === undefined ? undefined : toNumberOrNull(preventiveCare.value),
+    metodo_pago: preventiveCare.paymentMethod === undefined ? undefined : emptyToNull(preventiveCare.paymentMethod),
+    observaciones: preventiveCare.observations === undefined ? undefined : emptyToNull(preventiveCare.observations),
+  })
 }
 
 function toClinicalExamInsert(exam: Omit<ClinicalExam, 'id'>): ClinicalExamInsert {
@@ -273,10 +292,23 @@ function toClinicalExamInsert(exam: Omit<ClinicalExam, 'id'>): ClinicalExamInser
     paciente_id: Number(exam.patientId),
     tipo_examen: exam.examType.trim(),
     valor: toNumberOrNull(exam.value),
+    metodo_pago: emptyToNull(exam.paymentMethod),
     fecha_toma_muestra: exam.sampleDate,
     tipo_muestra: emptyToNull(exam.sampleType),
     observaciones: emptyToNull(exam.observations),
   }
+}
+
+function toClinicalExamUpdate(exam: Partial<Omit<ClinicalExam, 'id'>>): ClinicalExamUpdate {
+  return removeUndefined({
+    paciente_id: exam.patientId === undefined ? undefined : Number(exam.patientId),
+    tipo_examen: exam.examType === undefined ? undefined : exam.examType.trim(),
+    valor: exam.value === undefined ? undefined : toNumberOrNull(exam.value),
+    metodo_pago: exam.paymentMethod === undefined ? undefined : emptyToNull(exam.paymentMethod),
+    fecha_toma_muestra: exam.sampleDate,
+    tipo_muestra: exam.sampleType === undefined ? undefined : emptyToNull(exam.sampleType),
+    observaciones: exam.observations === undefined ? undefined : emptyToNull(exam.observations),
+  })
 }
 
 export async function fetchClinicRecords(): Promise<ClinicRecords> {
@@ -427,13 +459,28 @@ export async function updatePreventiveCare(
 ) {
   const { data, error } = await getSupabaseClient()
     .from('vacunas_desparasitaciones')
-    .update(removeUndefined(toPreventiveCareInsert({ ...emptyPreventiveCare, ...preventiveCare })))
+    .update(toPreventiveCareUpdate(preventiveCare))
     .eq('id', Number(id))
     .select()
     .single()
 
   if (error) throw error
   return mapPreventiveCare(data)
+}
+
+export async function updateClinicalExam(
+  id: ClinicalExam['id'],
+  exam: Partial<Omit<ClinicalExam, 'id'>>,
+) {
+  const { data, error } = await getSupabaseClient()
+    .from('examenes')
+    .update(toClinicalExamUpdate(exam))
+    .eq('id', Number(id))
+    .select()
+    .single()
+
+  if (error) throw error
+  return mapClinicalExam(data)
 }
 
 const emptyTutor: Omit<Tutor, 'id'> = {
@@ -462,15 +509,4 @@ const emptyPatient: Omit<Patient, 'id'> = {
   previousSurgeries: '',
   livesWithAnimals: false,
   animalHousemates: '',
-}
-
-const emptyPreventiveCare: Omit<PreventiveCare, 'id'> = {
-  patientId: '',
-  careType: 'Vacuna',
-  product: '',
-  batchNumber: '',
-  applicationDate: '',
-  nextDate: '',
-  value: '',
-  observations: '',
 }

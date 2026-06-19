@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
 import { SearchableSelect } from '../../../components/ui/SearchableSelect'
-import { isGenericTutor, type ClinicalExam, type Patient, type Tutor } from '../types/clinicRecords'
+import { isGenericTutor, type ClinicalExam, type Patient, type PaymentMethod, type Tutor } from '../types/clinicRecords'
 
 type ClinicalExamFormProps = {
   patients: Patient[]
@@ -33,6 +33,7 @@ const initialForm: Omit<ClinicalExam, 'id'> = {
   patientId: '',
   examType: '',
   value: '',
+  paymentMethod: '',
   sampleDate: '',
   sampleType: '',
   observations: '',
@@ -40,6 +41,8 @@ const initialForm: Omit<ClinicalExam, 'id'> = {
 
 type ClinicalExamField = keyof typeof initialForm
 type ClinicalExamErrors = Partial<Record<ClinicalExamField, string>>
+
+const paymentMethods: PaymentMethod[] = ['Efectivo', 'Transferencia', 'Tarjeta', 'Mixto']
 
 export function ClinicalExamForm({ patients, tutors, onSubmit }: ClinicalExamFormProps) {
   const [form, setForm] = useState(initialForm)
@@ -87,6 +90,7 @@ export function ClinicalExamForm({ patients, tutors, onSubmit }: ClinicalExamFor
       patientId: form.patientId,
       examType: form.examType,
       value: normalizeDecimalValue(form.value),
+      paymentMethod: form.paymentMethod,
       sampleDate: form.sampleDate,
       sampleType: form.sampleType.trim(),
       observations: form.observations.trim(),
@@ -144,6 +148,16 @@ export function ClinicalExamForm({ patients, tutors, onSubmit }: ClinicalExamFor
         <span className="field-label">Fecha de toma de muestra <span className="required-mark">*</span></span>
         <input required type="date" value={form.sampleDate} onChange={(event) => updateField('sampleDate', event.target.value)} />
         {errors.sampleDate && <small className="field-error-text">{errors.sampleDate}</small>}
+      </label>
+
+      <label>
+        Método de pago
+        <select value={form.paymentMethod} onChange={(event) => updateField('paymentMethod', event.target.value as PaymentMethod | '')}>
+          <option value="">Sin registrar</option>
+          {paymentMethods.map((method) => (
+            <option key={method} value={method}>{method}</option>
+          ))}
+        </select>
       </label>
 
       <label>

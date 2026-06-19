@@ -9,6 +9,7 @@ import {
   insertPreventiveCare,
   insertTutor,
   updateConsultation as updateConsultationRecord,
+  updateClinicalExam as updateClinicalExamRecord,
   updatePatient as updatePatientRecord,
   updatePreventiveCare as updatePreventiveCareRecord,
   updateTutor as updateTutorRecord,
@@ -247,6 +248,23 @@ export function useClinicRecords() {
         }))
 
         return savedPreventiveCare
+      },
+      async updateClinicalExam(id: ClinicalExam['id'], exam: Partial<Omit<ClinicalExam, 'id'>>) {
+        setError(null)
+        const savedExam = isSupabaseConfigured
+          ? await updateClinicalExamRecord(id, exam)
+          : null
+
+        setRecords((current) => ({
+          ...current,
+          exams: current.exams.map((currentExam) =>
+            currentExam.id === id
+              ? { ...currentExam, ...(savedExam ?? exam) }
+              : currentExam,
+          ),
+        }))
+
+        return savedExam
       },
     }),
     [records.tutors],

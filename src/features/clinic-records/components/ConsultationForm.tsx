@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
 import { SearchableSelect } from '../../../components/ui/SearchableSelect'
-import { isGenericTutor, type Consultation, type Patient, type PaymentStatus, type Tutor } from '../types/clinicRecords'
+import { isGenericTutor, type Consultation, type Patient, type PaymentMethod, type PaymentStatus, type Tutor } from '../types/clinicRecords'
 
 type ConsultationFormProps = {
   patients: Patient[]
@@ -63,6 +63,8 @@ const soapTextFields: Array<{ field: ConsultationField; label: string }> = [
   { field: 'referralCriteria', label: 'Criterio de derivación' },
   { field: 'internalObservations', label: 'Observaciones internas' },
 ]
+
+const paymentMethods: PaymentMethod[] = ['Efectivo', 'Transferencia', 'Tarjeta', 'Mixto']
 
 export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFormProps) {
   const [form, setForm] = useState(initialForm)
@@ -149,7 +151,7 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
       internalObservations: form.internalObservations.trim(),
       value: normalizeDecimalValue(form.value),
       paymentStatus: form.paymentStatus.trim() as PaymentStatus | '',
-      paymentMethod: '',
+      paymentMethod: form.paymentMethod.trim() as PaymentMethod | '',
     }
 
     try {
@@ -210,6 +212,15 @@ export function ConsultationForm({ patients, tutors, onSubmit }: ConsultationFor
           <option value="Social">Social</option>
         </select>
         {errors.paymentStatus && <small className="field-error-text">{errors.paymentStatus}</small>}
+      </label>
+      <label>
+        Método de pago
+        <select value={form.paymentMethod} onChange={(event) => updateField('paymentMethod', event.target.value)}>
+          <option value="">Sin registrar</option>
+          {paymentMethods.map((method) => (
+            <option key={method} value={method}>{method}</option>
+          ))}
+        </select>
       </label>
 
       <label className={errors.temperature ? 'field-error' : undefined}>Temperatura<input inputMode="decimal" value={form.temperature} onChange={(event) => updateField('temperature', event.target.value)} />{errors.temperature && <small className="field-error-text">{errors.temperature}</small>}</label>

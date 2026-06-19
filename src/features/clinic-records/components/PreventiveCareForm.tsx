@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { FormMessage } from '../../../components/ui/FormMessage'
 import { SearchableSelect } from '../../../components/ui/SearchableSelect'
-import { isGenericTutor, type Patient, type PreventiveCare, type Tutor } from '../types/clinicRecords'
+import { isGenericTutor, type Patient, type PaymentMethod, type PreventiveCare, type Tutor } from '../types/clinicRecords'
 
 type PreventiveCareFormProps = {
   patients: Patient[]
@@ -20,6 +20,7 @@ const initialVaccineForm: PreventiveCareFields = {
   applicationDate: '',
   nextDate: '',
   value: '',
+  paymentMethod: '',
   observations: '',
 }
 
@@ -31,11 +32,13 @@ const initialDewormingForm: PreventiveCareFields = {
   applicationDate: '',
   nextDate: '',
   value: '',
+  paymentMethod: '',
   observations: '',
 }
 
 const vaccineTypes = ['Antirrábica', 'Óctuple', 'Triple felina', 'Traqueobronquitis', 'Leucemia']
 const dewormingTypes: PreventiveCare['careType'][] = ['Desparasitación interna', 'Desparasitación externa', 'Ambas']
+const paymentMethods: PaymentMethod[] = ['Efectivo', 'Transferencia', 'Tarjeta', 'Mixto']
 
 export function PreventiveCareForm({ patients, tutors, onSubmit }: PreventiveCareFormProps) {
   return (
@@ -137,6 +140,7 @@ function PreventiveCareSubform({
       product: form.product.trim(),
       batchNumber: form.batchNumber.trim(),
       value: normalizeDecimalValue(form.value),
+      paymentMethod: form.paymentMethod,
       observations: form.observations.trim(),
     }
 
@@ -230,6 +234,15 @@ function PreventiveCareSubform({
       <label>
         Próxima aplicación
         <input type="date" value={form.nextDate} onChange={(event) => updateField('nextDate', event.target.value)} />
+      </label>
+      <label>
+        Método de pago
+        <select value={form.paymentMethod} onChange={(event) => updateField('paymentMethod', event.target.value as PaymentMethod | '')}>
+          <option value="">Sin registrar</option>
+          {paymentMethods.map((method) => (
+            <option key={method} value={method}>{method}</option>
+          ))}
+        </select>
       </label>
       {!isVaccineForm && (
         <label className="wide-field">

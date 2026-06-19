@@ -81,6 +81,7 @@ export type PreventiveCare = {
   applicationDate: string
   nextDate: string
   value: string
+  paymentMethod: PaymentMethod | ''
   observations: string
 }
 
@@ -89,6 +90,7 @@ export type ClinicalExam = {
   patientId: number | string
   examType: string
   value: string
+  paymentMethod: PaymentMethod | ''
   sampleDate: string
   sampleType: string
   observations: string

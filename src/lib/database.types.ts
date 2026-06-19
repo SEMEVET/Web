@@ -247,6 +247,7 @@ export type Database = {
           fecha_aplicacion: string | null
           proxima_fecha: string | null
           valor: number | null
+          metodo_pago: string | null
           observaciones: string | null
           fecha_creacion: string | null
         }
@@ -259,6 +260,7 @@ export type Database = {
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
           valor?: number | null
+          metodo_pago?: string | null
           observaciones?: string | null
           fecha_creacion?: string | null
         }
@@ -271,6 +273,7 @@ export type Database = {
           fecha_aplicacion?: string | null
           proxima_fecha?: string | null
           valor?: number | null
+          metodo_pago?: string | null
           observaciones?: string | null
           fecha_creacion?: string | null
         }
@@ -282,6 +285,7 @@ export type Database = {
           paciente_id: number
           tipo_examen: string
           valor: number | null
+          metodo_pago: string | null
           fecha_toma_muestra: string
           tipo_muestra: string | null
           observaciones: string | null
@@ -292,6 +296,7 @@ export type Database = {
           paciente_id: number
           tipo_examen: string
           valor?: number | null
+          metodo_pago?: string | null
           fecha_toma_muestra: string
           tipo_muestra?: string | null
           observaciones?: string | null
@@ -302,6 +307,7 @@ export type Database = {
           paciente_id?: number
           tipo_examen?: string
           valor?: number | null
+          metodo_pago?: string | null
           fecha_toma_muestra?: string
           tipo_muestra?: string | null
           observaciones?: string | null

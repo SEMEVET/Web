@@ -372,8 +372,12 @@ a {
 
 .payment-summary-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 14px;
+}
+
+.payment-summary-grid.compact {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 }
 
 .payment-summary-card {
@@ -404,6 +408,11 @@ a {
 .payment-summary-card small {
   color: var(--semevet-teal-dark);
   font-weight: 800;
+}
+
+.payment-summary-card.total {
+  border-left-color: var(--semevet-teal-dark);
+  background: #eefafa;
 }
 
 .payment-summary-card.pendiente,
@@ -805,6 +814,13 @@ a {
 .consultation-list {
   display: grid;
   gap: 14px;
+}
+
+.section-total {
+  margin: 0 0 10px;
+  color: var(--semevet-teal-dark);
+  font-size: 0.95rem;
+  font-weight: 800;
 }
 
 .consultation-card {
